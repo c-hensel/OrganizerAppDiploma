@@ -1,0 +1,104 @@
+﻿@using OrganizerApp.WebUI.Infrastructure.Resources.Languages
+@model OrganizerApp.WebUI.Models.TaskEditViewModel
+
+@if (Model.Task == null)
+{
+    @LocalizedText.TaskDoesntExist;
+    return;
+}
+
+@using (Html.BeginForm("Edit", "Tasks", FormMethod.Post, new { id = "taskForm" }))
+{
+    <h2> @Model.ContentGenerator.GetHeaderText(Model.Task.ID, Model.Task.Name) </h2>
+    <fieldset>
+        <legend> <strong> @LocalizedText.TaskDetails </strong> </legend>
+        <input name="id" type="hidden" value="@Model.Task.ID" />
+        <input name="state" type="hidden" value="todo" />
+        <fieldset id="taskNameArea">
+            <input name="name" type="text" value="@Model.Task.Name" placeholder="@LocalizedText.TaskName" />
+            <div class="validationError">
+                @Html.ValidationMessageFor(model => model.Task.Name)
+            </div>
+        </fieldset>
+        <fieldset>
+            <input name="description" type="text" value="@Model.Task.Description" placeholder="@LocalizedText.TaskDescription" />
+        </fieldset>
+        <fieldset id="taskPriorityArea">
+            <label> <input name="priority" type="radio" value="low" @Model.ContentGenerator.GetPriorityHtmlCheckedState(Model.Task.Priority, "low") /> @LocalizedText.Low </label>
+            <label> <input name="priority" type="radio" value="medium" @Model.ContentGenerator.GetPriorityHtmlCheckedState(Model.Task.Priority, "medium") /> @LocalizedText.Medium </label>
+            <label> <input name="priority" type="radio" value="high" @Model.ContentGenerator.GetPriorityHtmlCheckedState(Model.Task.Priority, "high") /> @LocalizedText.High </label>
+            <div class="validationError">
+                @Html.ValidationMessageFor(model => model.Task.Priority)
+            </div>
+        </fieldset>
+        <fieldset id="taskExecutionTimeArea">
+            <label for="executionTime"> @LocalizedText.ExecutionTime </label>
+            <select id="executionTime" name="executionTime">
+                <option value="">  </option>
+                <option value="next" @Model.ContentGenerator.GetExecutionTimeHtmlSelectedState(Model.Task.ExecutionTime, "next")> @LocalizedText.Next </option>
+                <option value="scheduled" @Model.ContentGenerator.GetExecutionTimeHtmlSelectedState(Model.Task.ExecutionTime, "scheduled")> @LocalizedText.Scheduled </option>
+                <option value="someday" @Model.ContentGenerator.GetExecutionTimeHtmlSelectedState(Model.Task.ExecutionTime, "someday")> @LocalizedText.SomedayMaybe </option>
+            </select>
+            <div class="validationError">
+                @Html.ValidationMessageFor(model => model.Task.ExecutionTime)
+            </div>
+        </fieldset>
+        <div id="taskStartTimeArea">
+            <fieldset>
+                <input name="startTime" value="@Model.ContentGenerator.GetDateHtmlValue(Model.Task.StartTime)" type="date" min="@DateTime.Now.ToShortDateString()" />
+                <div class="validationError">
+                    @Html.ValidationMessageFor(model => model.Task.StartTime)
+                </div>
+            </fieldset>
+        </div>
+        <fieldset>
+            <label for="projectName"> @LocalizedText.Project </label>
+            <select id="projectName" name="projectID">
+                <option id="defaultProjectName" value="@Model.ContentGenerator.GetProjectHtmlValue(Model.Task.ProjectID)"> @Model.ContentGenerator.GetProjectName(Model.Task.ProjectID, Model.Task.Project?.Name) </option>
+                <optgroup label="Aktywne projekty">
+                    @foreach (var project in Model.ActiveProjects)
+                    {
+                        <option value="@project.ID.ToString()"> @project.Name </option>
+                    }
+                </optgroup>
+            </select>
+        </fieldset>
+        <fieldset id="taskContextArea">
+            <label for="context"> Kontekst </label>
+            <select id="context" name="context">
+                <option value="">  </option>
+                <option value="Miasto" @Model.ContentGenerator.GetContextHtmlSelectedState(Model.Task.Context, "Miasto")> Miasto </option>
+                <option value="Dom" @Model.ContentGenerator.GetContextHtmlSelectedState(Model.Task.Context, "Dom")> Dom </option>
+                <option value="Komputer" @Model.ContentGenerator.GetExecutionTimeHtmlSelectedState(Model.Task.Context, "Komputer")> Komputer </option>
+                <option value="Telefon" @Model.ContentGenerator.GetExecutionTimeHtmlSelectedState(Model.Task.Context, "Telefon")> Telefon </option>
+            </select>
+        </fieldset>
+        <div class="bootstrap-iso inline">
+            <input id="submitTaskForm" class="btn-success" type="submit" formmethod="post" value="@LocalizedText.Save" />
+        </div>
+    </fieldset>
+}
+
+@if (Model.Task.ID != 0)
+{
+    <div class="bootstrap-iso block">
+        @Html.ActionLink("Ukończ", "Done", "Tasks", new { id = Model.Task.ID }, new { @class = "btn btn-success btn-sm" })
+        @Html.ActionLink("Usuń", "Remove", "Tasks", new { id = Model.Task.ID }, new { @class = "btn btn-danger btn-sm" })
+        
+        @*<p> <a href="@Url.Action("Done" , "Projects", new { id = Model.Task.ID })"> Delete </a> </p>
+        @Ajax.ActionLink("zzzz", "Done", "Projects", new { id = Model.Task.ID }, new AjaxOptions { HttpMethod = "POST" })*@
+
+    </div>
+}
+
+
+@section scripts {
+    <script>
+        var nameRequiredMessage = '@OrganizerApp.ValidationCommunications.Task.LocalizedText.NameRequired';
+        var priorityRequiredMessage = '@OrganizerApp.ValidationCommunications.Task.LocalizedText.PriorityRequired';
+        var executionTimeRequiredMessage = '@OrganizerApp.ValidationCommunications.Task.LocalizedText.ExecutionTimeRequired';
+        var startTimeRequiredMessage = '@Html.Raw(OrganizerApp.ValidationCommunications.Task.LocalizedText.StartTimeRequired)';
+    </script>
+    <script type="text/javascript" src="@Url.Content("/MyScripts/AjaxHelpers.js")"></script>
+    <script type="text/javascript" src="@Url.Content("/MyScripts/TaskFormScripts.js")"></script>
+}

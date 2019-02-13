@@ -1,0 +1,72 @@
+﻿@using OrganizerApp.WebUI.Infrastructure.Resources.Languages
+@using OrganizerApp.BllDtos.Tasks;
+@model OrganizerApp.WebUI.Models.TasksListViewModel
+<h2> @LocalizedText.Tasks </h2>
+@if (Model.Tasks == null || Model.Tasks.Count() == 0)
+{
+    <p> @LocalizedText.TasksNotFound </p>
+    return;
+}
+
+@{var cityContextTasks = Model.Tasks.Where(x => x.Context == "Miasto").ToList();}
+
+@if (cityContextTasks.Count > 0)
+{
+    <b>Miasto</b>
+    foreach (var item in cityContextTasks)
+    {
+        @Html.Partial("_ExtendedTaskView", item);
+    }
+}
+
+@{var homeContextTasks = Model.Tasks.Where(x => x.Context == "Dom").ToList();}
+
+@if (homeContextTasks.Count > 0)
+{
+    <b>Dom</b>
+    foreach (var item in homeContextTasks)
+    {
+        @Html.Partial("_ExtendedTaskView", item);
+    }
+}
+
+@{var computerContextTasks = Model.Tasks.Where(x => x.Context == "Komputer").ToList();}
+
+@if (computerContextTasks.Count > 0)
+{
+    <b>Komputer</b>
+    foreach (var item in computerContextTasks)
+    {
+        @Html.Partial("_ExtendedTaskView", item);
+    }
+}
+
+@{var mobilePhone = Model.Tasks.Where(x => x.Context == "Telefon").ToList();}
+
+@if (mobilePhone.Count > 0)
+{
+    <b>Dom</b>
+    foreach (var item in mobilePhone)
+    {
+        @Html.Partial("_ExtendedTaskView", item);
+    }
+}
+
+@{var emptyContext = Model.Tasks.Where(x => x.Context == null || x.Context == "").ToList();}
+
+@if (emptyContext.Count > 0)
+{
+    <b>Bez kontekstu</b>
+    foreach (var item in emptyContext)
+    {
+        @Html.Partial("_ExtendedTaskView", item);
+    }
+}
+
+@section scripts{
+    <script>
+        var doneTaskApiAction = '@Model.DoneTaskActionUri';
+    </script>
+    <script src="@Url.Content("/MyScripts/AjaxHelpers.js")"></script>
+    <script src="@Url.Content("/MyScripts/TasksListScripts.js")"></script>
+}

@@ -1,0 +1,99 @@
+﻿@using OrganizerApp.BllDtos.Tasks
+@using OrganizerApp.WebUI.Infrastructure.Resources.Languages
+@model OrganizerApp.WebUI.Models.ProjectEditViewModel
+
+@if (Model.Project == null)
+{
+    @LocalizedText.ProjectDoesntExist;
+    return;
+}
+@using (Html.BeginForm("Edit", "Projects", FormMethod.Post))
+{
+    <h2> @Model.ContentGenerator.GetHeaderText(Model.Project.ID, Model.Project.Name)</h2>
+    <fieldset>
+        <legend> <strong> @LocalizedText.ProjectDetails </strong> </legend>
+        <input name="id" type="hidden" value="@Model.Project.ID" />
+        <input name="state" type="hidden" value="todo" />
+        <fieldset id="projectNameArea">
+            <input name="name" type="text" value="@Model.Project.Name" placeholder="@LocalizedText.ProjectName" />
+            <div class="validationError">
+                @Html.ValidationMessageFor(model => model.Project.Name)
+            </div>
+        </fieldset>
+        <fieldset>
+            <input name="description" type="text" value="@Model.Project.Description" placeholder="@LocalizedText.ProjectDescription" />
+        </fieldset>
+        <fieldset id="projectPriorityArea">
+            <label> <input name="priority" type="radio" value="low" @Model.ContentGenerator.GetPriorityHtmlCheckedState(Model.Project.Priority, "low") /> @LocalizedText.Low </label>
+            <label> <input name="priority" type="radio" value="medium" @Model.ContentGenerator.GetPriorityHtmlCheckedState(Model.Project.Priority, "medium") /> @LocalizedText.Medium </label>
+            <label> <input name="priority" type="radio" value="high" @Model.ContentGenerator.GetPriorityHtmlCheckedState(Model.Project.Priority, "high") /> @LocalizedText.High </label>
+            <div class="validationError">
+                @Html.ValidationMessageFor(model => model.Project.Priority)
+            </div>
+        </fieldset>
+        <fieldset id="projectExecutionTimeArea">
+            <label for="executionTime"> @LocalizedText.ExecutionTime </label>
+            <select id="executionTime" name="executionTime">
+                <option value="">  </option>
+                <option value="next" @Model.ContentGenerator.GetExecutionTimeHtmlSelectedState(Model.Project.ExecutionTime, "next")> @LocalizedText.Next </option>
+                <option value="scheduled" @Model.ContentGenerator.GetExecutionTimeHtmlSelectedState(Model.Project.ExecutionTime, "scheduled")> @LocalizedText.Scheduled </option>
+                <option value="someday" @Model.ContentGenerator.GetExecutionTimeHtmlSelectedState(Model.Project.ExecutionTime, "someday")> @LocalizedText.SomedayMaybe </option>
+            </select>
+            <div class="validationError">
+                @Html.ValidationMessageFor(model => model.Project.ExecutionTime)
+            </div>
+        </fieldset>
+        <div id="projectStartTimeArea">
+            <fieldset>
+                <input name="startTime" value="@Model.ContentGenerator.GetDateHtmlValue(Model.Project.StartTime)" type="date" min="@DateTime.Now.ToShortDateString()" />
+                <div class="validationError">
+                    @Html.ValidationMessageFor(model => model.Project.StartTime)
+                </div>
+            </fieldset>
+        </div>
+        <div class="bootstrap-iso">
+            <input id="submitProjectForm" class="btn-success" type="submit" formmethod="post" value="@LocalizedText.Save" />
+        </div>
+    </fieldset>
+}
+@if (Model.Project.ID != 0)
+{
+    <div class="bootstrap-iso block">
+        @Html.ActionLink("Ukończ", "Done", "Projects", new { id = Model.Project.ID }, new { @class = "btn btn-success btn-sm" })
+        @Html.ActionLink("Usuń", "Remove", "Projects", new { id = Model.Project.ID }, new { @class = "btn btn-danger btn-sm" })
+
+        @*<p> <a href="@Url.Action("Done" , "Projects", new { id = Model.Task.ID })"> Delete </a> </p>
+            @Ajax.ActionLink("zzzz", "Done", "Projects", new { id = Model.Task.ID }, new AjaxOptions { HttpMethod = "POST" })*@
+
+    </div>
+}
+@if (Model.Project.ID != 0)
+{
+    <fieldset>
+        <legend> <h3> @LocalizedText.ProjectTasks </h3> </legend>
+        @if (Model.Project.ProjectTasks == null || Model.Project.ProjectTasks.Count == 0)
+        {
+            <p>@LocalizedText.ProjectDoesntContatinAnyTasks</p>
+        }
+        else
+        {
+            <div id="projectTasks">
+                @foreach (var task in Model.Project.ProjectTasks)
+                {
+                    Html.RenderPartial("~/Views/Shared/_ExtendedTaskView.cshtml", AutoMapper.Mapper.Map<TaskDetailWithoutProjectRef, TaskBaseWithPriorityAndContext>(task));
+                }
+            </div>
+        }
+    </fieldset>
+}
+
+@section scripts {
+    <script>
+        var nameRequiredMessage = "@OrganizerApp.ValidationCommunications.Project.LocalizedText.NameRequired";
+        var priorityRequiredMessage = "@OrganizerApp.ValidationCommunications.Project.LocalizedText.PriorityRequired";
+        var executionTimeRequiredMessage = "@OrganizerApp.ValidationCommunications.Project.LocalizedText.ExecutionTimeRequired";
+        var startTimeRequiredMessage = '@Html.Raw(OrganizerApp.ValidationCommunications.Project.LocalizedText.StartTimeRequired)';
+    </script>
+    <script type="text/javascript" src="@Url.Content("/MyScripts/ProjectFormScripts.js")"></script>
+}
+

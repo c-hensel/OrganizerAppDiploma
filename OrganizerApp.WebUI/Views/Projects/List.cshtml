@@ -1,0 +1,25 @@
+﻿@using OrganizerApp.WebUI.Infrastructure.Resources.Languages
+@model OrganizerApp.WebUI.Models.ProjectsListViewModel
+
+<h2> @LocalizedText.Projects </h2>
+@if (Model.Projects == null || Model.Projects.Count() == 0)
+{
+    <p> @LocalizedText.ProjectsNotFound </p>
+    return;
+}
+@foreach (var item in Model.Projects)
+{
+    @Html.Partial("_ExtendedProjectView", item)
+}
+
+@section scripts{
+    <script>
+        var doneProjectApiAction = '@Model.DoneProjectActionUri';
+    </script>
+    <script src="@Url.Content("/MyScripts/AjaxHelpers.js")"></script>
+    <script src="@Url.Content("/MyScripts/ProjectsListScripts.js")"></script>
+}
+
+
+
+
